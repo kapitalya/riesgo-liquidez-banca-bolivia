@@ -3,7 +3,7 @@
 > Script de línea de comandos y notebook que asignan una polaridad de sentimiento a titulares financieros en español y calculan un índice diario o agregado. Para analistas y estudiantes de NLP aplicado a finanzas.
 
 **Estado (2026-11-17):** PARCIAL — `monitor_sentimiento.py` es un CLI de sentimiento (VADER + lexicón financiero propio); no hay datos de noticias en el repo (`datos/noticias.csv` no incluido); el notebook no tiene outputs guardados; el README anterior describía LDA, TF-IDF + regresión logística y correlación con BTC/ILF, que no están en el script; falta `requirements.txt`, `.gitignore` y licencia.
-**Repo:** kapitalya/riesgo-liquidez-banca-bolivia · **Rama por defecto:** main · **Alias/nombres anteriores:** nombre del repo no coincide con el contenido. Alias propuesto: `nlp-noticias-financieras-latam` (nombre que usa el README anterior). Sin renombrar en este PR; decisión del dueño.
+**Repo:** kapitalya/riesgo-liquidez-banca-bolivia · **Rama por defecto:** main · **Alias/nombres anteriores:** el nombre del repo (`riesgo-liquidez-banca-bolivia`) no describe su contenido: el proyecto hace NLP de sentimiento sobre noticias financieras (ver "Qué hace"), no análisis de riesgo de liquidez. El nombre se mantiene por decisión del dueño (17/11/2026); esta aclaración es la referencia.
 
 > Aviso: análisis educativo, no es consejo financiero ni una medida de riesgo de liquidez bancaria. El repo no calcula riesgo de liquidez.
 
