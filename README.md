@@ -1,189 +1,104 @@
-# 📰 NLP Aplicado a Noticias Financieras LATAM
+# Análisis de sentimiento de noticias financieras (español, LATAM)
 
-![Python](https://img.shields.io/badge/Python-3.10-3776AB?style=flat&logo=python&logoColor=white)
-![NLTK](https://img.shields.io/badge/NLTK-3.8-green?style=flat)
-![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3-F7931E?style=flat&logo=scikit-learn&logoColor=white)
-![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?style=flat&logo=jupyter&logoColor=white)
-![NLP](https://img.shields.io/badge/NLP-Español-blue?style=flat)
-![Status](https://img.shields.io/badge/Estado-Activo-brightgreen)
+> Script de línea de comandos y notebook que asignan una polaridad de sentimiento a titulares financieros en español, y agregan un índice. Para analistas y estudiantes de NLP aplicado a finanzas.
 
-Pipeline completo de procesamiento de lenguaje natural aplicado a noticias financieras en español del mercado latinoamericano. Incluye análisis de sentimiento, clasificación de categorías con TF-IDF, topic modeling con LDA y correlación con precios de activos.
+**Estado (2026-11-17):** PARCIAL — `monitor_sentimiento.py` es un CLI de sentimiento (VADER más un lexicón financiero propio); no hay noticias en el repo (el CSV es de entrada manual); el notebook no tiene outputs guardados; el README anterior describía LDA, TF-IDF + regresión logística y correlación con BTC/ILF, que no están en el script; LDA y regresión logística sí aparecen en el notebook, sin resultados verificables; falta `requirements.txt`, `.gitignore` y licencia.
+**Repo:** kapitalya/riesgo-liquidez-banca-bolivia · **Rama por defecto:** main · **Alias/nombres anteriores:** el nombre del repo no coincide con su contenido: no es un análisis de riesgo de liquidez bancaria. No se renombra.
 
----
+> Aviso: análisis educativo, no es consejo financiero. El repo no calcula riesgo de liquidez bancaria.
 
-## 🎯 Por Qué NLP Financiero en Español
+## Qué hace
 
-La mayoría de los modelos de sentimiento financiero están entrenados en inglés (Bloomberg, Reuters). El mercado boliviano y LATAM genera noticias en español con particularidades propias:
+- `monitor_sentimiento.py` (raíz): lee un CSV de noticias, limpia el texto, tokeniza en español, calcula un score con VADER más un lexicón financiero propio (`calcular_sentimiento`), detecta menciones de entidades (`detectar_entidades`), calcula un índice agregado (`calcular_indice_sentimiento`) e imprime un reporte (`generar_reporte`). Puede guardar el resultado en CSV con `--output`.
+- `nlp_noticias_financieras.ipynb`: exploración más amplia. Además de VADER y TextBlob, incluye TF-IDF y CountVectorizer, LDA (`LatentDirichletAllocation`), regresión logística y Naive Bayes, y una sección "Correlación Sentimiento vs Precio BTC" que descarga BTC-USD con `yfinance`. Sin outputs guardados, así que sus resultados no son verificables.
 
-- Términos económicos regionales ("encaje legal", "tipo de cambio paralelo", "aguinaldo")
-- Entidades locales (BCB, ASFI, YPFB, Tigo Money)
-- Contexto político-económico específico
+## Stack
 
-Este proyecto construye ese pipeline desde cero con lexicón financiero personalizado para español.
+Python. Librerías importadas por el script: `nltk` (stopwords y tokenización), `vaderSentiment`, `scikit-learn` (importa `TfidfVectorizer`, que no se llama en el script), `pandas`, `numpy`. Librerías importadas por el notebook: además `textblob`, `wordcloud`, `yfinance`, `seaborn`, `matplotlib`, y `scikit-learn` (LDA, regresión logística, Naive Bayes). Jupyter Notebook.
 
----
-
-## 🧠 Pipeline Técnico
+## Estructura
 
 ```
-Titulares en español
-       ↓
-1. Limpieza         → minúsculas, regex, stopwords ES + financieras
-       ↓
-2. Tokenización     → NLTK con modelo español
-       ↓
-3. Sentimiento      → VADER + lexicón financiero personalizado
-       ↓
-4. Clasificación    → TF-IDF (1-2 gramas) + Logistic Regression
-       ↓
-5. Topic Modeling   → LDA (descubrimiento no supervisado de temas)
-       ↓
-6. Correlación      → Sentimiento vs retornos de activos (BTC, ILF)
-```
-
----
-
-## 📐 Decisiones Técnicas Clave
-
-**¿Por qué VADER con lexicón personalizado y no un modelo preentrenado?**
-
-VADER es ligero, rápido e interpretable. Para producción en fintech con recursos limitados, es más práctico que cargar un modelo BERT de 500MB. El lexicón financiero personalizado compensa la falta de vocabulario de dominio.
-
-```python
-# Lexicón financiero para contexto boliviano/LATAM
-lexicon_financiero = {
-    'superávit':   +3.0,   'crisis':      -3.0,
-    'crecimiento': +2.5,   'devaluación': -3.0,
-    'expansión':   +2.0,   'escasez':     -2.5,
-    'récord':      +2.0,   'fraude':      -3.5,
-    # ... más términos
-}
-analyzer.lexicon.update(lexicon_financiero)
-```
-
-**¿Por qué TF-IDF y no embeddings?**
-
-Con datasets pequeños (< 1000 noticias), TF-IDF supera a modelos de embeddings. Los embeddings necesitan miles de ejemplos para generalizar. TF-IDF con bigramas captura bien los patrones de noticias financieras.
-
-**¿Por qué LDA para topic modeling?**
-
-LDA es probabilístico e interpretable. Cada documento es una mezcla de temas, y cada tema tiene palabras con probabilidades asignadas. Ideal para exploración cuando no tienes categorías predefinidas.
-
----
-
-## 📊 Fuentes de Datos Reales
-
-Para escalar este análisis con noticias reales, estas fuentes tienen RSS en español:
-
-| Fuente | URL RSS | Cobertura |
-|---|---|---|
-| El Deber (Bolivia) | `eldeber.com.bo/rss` | Bolivia |
-| La Razón (Bolivia) | `la-razon.com/rss` | Bolivia |
-| Bloomberg Línea | `bloomberglinea.com/rss` | LATAM |
-| El Financiero MX | `elfinanciero.com.mx/rss` | México |
-| Portafolio CO | `portafolio.co/rss` | Colombia |
-| Gestión PE | `gestion.pe/rss` | Perú |
-
-```python
-import feedparser
-
-def leer_rss(url: str) -> list:
-    feed = feedparser.parse(url)
-    return [{'titulo': e.title, 'fecha': e.published, 'link': e.link}
-            for e in feed.entries]
-```
-
----
-
-## 📁 Estructura
-
-```
-nlp-noticias-financieras-latam/
-├── nlp_noticias_financieras.ipynb    # Análisis completo
-├── src/
-│   └── monitor_sentimiento.py        # Script de producción con CLI
-├── datos/                            # Tus CSVs de noticias
-├── modelos/                          # Modelos entrenados (.pkl)
-├── img/                              # Gráficas exportadas
-├── requirements.txt
+riesgo-liquidez-banca-bolivia/
+├── monitor_sentimiento.py          # CLI de sentimiento (en la raíz, no en src/)
+├── nlp_noticias_financieras.ipynb  # Notebook de exploración (sin outputs)
 └── README.md
 ```
 
----
+`datos/` no existe en el repo. El CSV de noticias lo prepara el usuario; el notebook tiene comentada la lectura de `datos/noticias_financieras.csv`.
 
-## ⚙️ Instalación
+## Instalación y uso
 
 ```bash
-git clone https://github.com/Serius69/nlp-noticias-financieras-latam
-cd nlp-noticias-financieras-latam
+git clone https://github.com/kapitalya/riesgo-liquidez-banca-bolivia
+cd riesgo-liquidez-banca-bolivia
 
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-mkdir -p datos modelos img
-
-# Notebook completo
-jupyter lab nlp_noticias_financieras.ipynb
+python -m venv venv && source venv/bin/activate   # Windows: venv\Scripts\activate
+pip install pandas numpy nltk vaderSentiment scikit-learn textblob wordcloud yfinance seaborn matplotlib jupyter   # sin requirements.txt
+mkdir -p datos
 ```
 
-**Usar el monitor desde CLI:**
-```bash
-# Analizar un CSV de noticias
-python src/monitor_sentimiento.py --csv datos/noticias.csv
+El script descarga por sí mismo los recursos de NLTK (`punkt`, `stopwords`, `punkt_tab`) al iniciar. Sin verificar: que TextBlob y WordCloud requieran pasos adicionales (son solo del notebook).
 
-# Especificar columna de texto
-python src/monitor_sentimiento.py --csv datos/noticias.csv --col-texto headline
+Formato de entrada (el CSV lo prepara el usuario; no hay muestra en el repo). Columnas que el script usa por defecto: `titulo` (texto) y `fecha`. El formato del README anterior, `fecha,titulo,fuente,categoria,pais`, es un ejemplo; sin verificar si el script usa las columnas `fuente`, `categoria` o `pais`.
 
-# Guardar resultados
-python src/monitor_sentimiento.py --csv datos/noticias.csv --output datos/con_sentimiento.csv
-```
-
-**Formato CSV de entrada:**
 ```
 fecha,titulo,fuente,categoria,pais
-2024-01-05,Bolivia registra superávit comercial,El Deber,macroeconomia,BO
-2024-01-08,Crisis de reservas preocupa al BCB,La Razón,macroeconomia,BO
+2024-01-05,Titular de ejemplo,Fuente de ejemplo,macroeconomia,BO
 ```
 
----
+Ejecución (desde la raíz del repo):
 
-## 📈 Output del Monitor
+```bash
+# Columnas por defecto: titulo (texto) y fecha
+python monitor_sentimiento.py --csv datos/noticias.csv
 
-```
-=================================================================
-REPORTE DE SENTIMIENTO — NOTICIAS FINANCIERAS
-Generado: 2024-04-15 10:32
-=================================================================
+# Columnas personalizadas
+python monitor_sentimiento.py --csv datos/noticias.csv --col-texto headline --col-fecha date
 
-📊 Resumen General
-  Total noticias:    89
-  Período:           2024-01-01 → 2024-04-15
-  Score promedio:    -0.0821
-
-🎭 Distribución de Sentimientos
-  🟢 POSITIVO   ███████ 34 (38.2%)
-  ⚪ NEUTRO      ████ 18 (20.2%)
-  🔴 NEGATIVO   ██████████ 37 (41.6%)
+# Guardar resultados en CSV
+python monitor_sentimiento.py --csv datos/noticias.csv --output datos/con_sentimiento.csv
 ```
 
----
+## Variables de entorno (solo nombres)
 
-## 🔮 Próximos Pasos
+Ninguna. No hay `.env.example`.
 
-- [ ] Integrar RSS feeds en tiempo real con `feedparser`
-- [ ] Modelo preentrenado en español: `PlanTL-GOB-ES/roberta-base-bne`
-- [ ] Índice de sentimiento financiero boliviano en tiempo real
-- [ ] Alertas automáticas cuando el sentimiento cae por debajo de umbral
+## Pruebas y CI
 
----
+- Sin pruebas automatizadas ni workflows de CI en el repo.
 
-## 🔗 Proyectos Relacionados
+### Resultados
 
-- [💱 Dólar Paralelo Bolivia — ARIMA](https://github.com/Serius69/dolar-paralelo-bolivia-arima)
-- [₿ Bitcoin LATAM](https://github.com/Serius69/bitcoin-latam-analisis)
-- [🔍 Detección de Fraude](https://github.com/Serius69/deteccion-fraude-transacciones)
+- El bloque "Output del Monitor" del README anterior (89 noticias, 34 positivas, 18 neutras, 37 negativas, score promedio -0.0821) es un ejemplo sin datos en el repo que lo respalden. Se retira. Resultado no verificable en el repo.
+- Los resultados de LDA, regresión logística y correlación con BTC del notebook no tienen outputs guardados. No verificables en el repo.
 
----
+## Despliegue
 
-## 👤 Autor
+No aplica: script y notebook de ejecución local.
 
-**Sergio** — Data Scientist en Finanzas | [github.com/Serius69](https://github.com/Serius69)
+## Fuentes de noticias
+
+- El script no descarga noticias: la entrada es un CSV manual.
+- El README anterior listaba feeds RSS (El Deber, La Razón, Bloomberg Línea, El Financiero MX, Portafolio CO, Gestión PE) como próximos pasos. Ni el script ni el notebook los consumen. Sin verificar que las URL sigan vigentes.
+- Precios de BTC-USD: descargados con `yfinance` en el notebook. No se encontró código que use ILF en la correlación; la correlación con ILF del README anterior no está verificada.
+
+## Estado y relaciones
+
+- Repositorio independiente. El README anterior enlazaba repos de una cuenta personal fuera de la organización (`Serius69/*`); no auditados en este corte.
+- Relación con el riesgo de liquidez bancaria: ninguna en el código. Este repo no mide liquidez.
+
+## Precios y planes
+
+No aplica (repositorio de análisis, sin venta). Precios y planes: fuente única `Vault/EMPRESA/portafolio/PRECIOS-APROBADOS-20261108.md`.
+
+## Seguridad, privacidad y derechos
+
+- Sin secretos en el repo.
+- Noticias: el texto de los medios tiene derechos de sus autores. El repo no incluye noticias; cualquier CSV que se cargue debe respetar los términos del medio.
+- Precios: Yahoo Finance (vía `yfinance`), sujeto a sus términos; no verificados en este corte.
+- Licencia: el repo no tiene archivo LICENSE; no hay derechos de reutilización declarados.
+
+## Convenciones de trabajo
+
+Cambios por rama `codex/*` y PR contra `main` (no hay rama `develop`). CI: no hay workflows configurados.
